@@ -3,29 +3,29 @@ package storage
 import (
 	"fmt"
 
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
 type StubOperationStorage struct {
-	operations []*domain.CurrencyOperation
+	operations []*entity.CurrencyOperation
 }
 
 func NewStubOperationStorage() *StubOperationStorage {
 	return &StubOperationStorage{
-		operations: make([]*domain.CurrencyOperation, 0),
+		operations: make([]*entity.CurrencyOperation, 0),
 	}
 }
 
-func (stg *StubOperationStorage) GetAll() ([]*domain.CurrencyOperation, error) {
+func (stg *StubOperationStorage) GetAll() ([]*entity.CurrencyOperation, error) {
 	return stg.operations, nil
 }
 
-func (stg *StubOperationStorage) Save(op *domain.CurrencyOperation) error {
+func (stg *StubOperationStorage) Save(op *entity.CurrencyOperation) error {
 	stg.operations = append(stg.operations, op)
 	return nil
 }
 
-func (stg *StubOperationStorage) DeleteLast() (*domain.CurrencyOperation, error) {
+func (stg *StubOperationStorage) DeleteLast() (*entity.CurrencyOperation, error) {
 	if len(stg.operations) == 0 {
 		return nil, fmt.Errorf("there are no operations yet")
 	}

@@ -1,6 +1,6 @@
 package controllers
 
-import "github.com/dmitruk-v/piggy-bank/internal/usecase"
+import "github.com/dmitruk-v/piggy-bank/internal/domain/usecase"
 
 type CliShowBalanceController struct {
 	showBalanceUcase usecase.ShowBalanceUseCaseInput

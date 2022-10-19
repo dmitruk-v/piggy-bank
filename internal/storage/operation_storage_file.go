@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
 type FileOperationStorage struct {
@@ -28,13 +28,13 @@ func NewFileOperationStorage(filename string) *FileOperationStorage {
 	}
 }
 
-func (stg *FileOperationStorage) GetAll() ([]*domain.CurrencyOperation, error) {
+func (stg *FileOperationStorage) GetAll() ([]*entity.CurrencyOperation, error) {
 	f, err := os.Open(stg.filename)
 	if err != nil {
 		return nil, fmt.Errorf("get list of operations: %v", err)
 	}
 	defer f.Close()
-	ops := make([]*domain.CurrencyOperation, 0)
+	ops := make([]*entity.CurrencyOperation, 0)
 	rdr := bufio.NewReader(f)
 	for {
 		line, err := rdr.ReadString('\n')
@@ -57,7 +57,7 @@ func (stg *FileOperationStorage) GetAll() ([]*domain.CurrencyOperation, error) {
 	return ops, nil
 }
 
-func (stg *FileOperationStorage) GetLatest(num int) ([]*domain.CurrencyOperation, error) {
+func (stg *FileOperationStorage) GetLatest(num int) ([]*entity.CurrencyOperation, error) {
 	f, err := os.Open(stg.filename)
 	if err != nil {
 		return nil, fmt.Errorf("get latest operations: %v", err)
@@ -81,7 +81,7 @@ func (stg *FileOperationStorage) GetLatest(num int) ([]*domain.CurrencyOperation
 		}
 		if len(lines) >= num {
 			lines = lines[len(lines)-num:]
-			ops := make([]*domain.CurrencyOperation, 0)
+			ops := make([]*entity.CurrencyOperation, 0)
 			for _, ln := range lines {
 				op, err := stg.OperationFromString(string(ln))
 				if err != nil {
@@ -95,7 +95,7 @@ func (stg *FileOperationStorage) GetLatest(num int) ([]*domain.CurrencyOperation
 	}
 }
 
-func (stg *FileOperationStorage) Save(op *domain.CurrencyOperation) error {
+func (stg *FileOperationStorage) Save(op *entity.CurrencyOperation) error {
 	f, err := os.OpenFile(stg.filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		return fmt.Errorf("save operation: %v", err)
@@ -108,11 +108,11 @@ func (stg *FileOperationStorage) Save(op *domain.CurrencyOperation) error {
 	return nil
 }
 
-func (stg *FileOperationStorage) DeleteLast() (*domain.CurrencyOperation, error) {
+func (stg *FileOperationStorage) DeleteLast() (*entity.CurrencyOperation, error) {
 	return nil, nil
 }
 
-func (stg *FileOperationStorage) OperationFromString(s string) (*domain.CurrencyOperation, error) {
+func (stg *FileOperationStorage) OperationFromString(s string) (*entity.CurrencyOperation, error) {
 	parts := strings.Split(strings.TrimSuffix(s, "\n"), ",")
 	if len(parts) != 6 {
 		return nil, fmt.Errorf("parse operation string, want 6 parts, got: %v, %#v", len(parts), parts)
@@ -121,7 +121,7 @@ func (stg *FileOperationStorage) OperationFromString(s string) (*domain.Currency
 	if err != nil {
 		return nil, fmt.Errorf("parse operation string: %v", err)
 	}
-	currency := domain.Currency(parts[1])
+	currency := entity.Currency(parts[1])
 	amount, err := strconv.ParseFloat(parts[2], 64)
 	if err != nil {
 		return nil, fmt.Errorf("parse operation string: %v", err)
@@ -138,10 +138,10 @@ func (stg *FileOperationStorage) OperationFromString(s string) (*domain.Currency
 	if err != nil {
 		return nil, fmt.Errorf("parse operation string: %v", err)
 	}
-	op := domain.NewCurrencyOperation(domain.OperationType(opType), currency, amount, providedAt, hash, prevHash)
+	op := entity.NewCurrencyOperation(entity.OperationType(opType), currency, amount, providedAt, hash, prevHash)
 	return op, nil
 }
 
-func (stg *FileOperationStorage) OperationToString(op *domain.CurrencyOperation) string {
+func (stg *FileOperationStorage) OperationToString(op *entity.CurrencyOperation) string {
 	return fmt.Sprintf("%v,%v,%v,%v,%v,%v\n", op.Optype, op.Currency, op.Amount, op.ProvidedAt, hex.EncodeToString(op.Hash), hex.EncodeToString(op.PrevHash))
 }

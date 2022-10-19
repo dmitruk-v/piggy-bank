@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
 type WithdrawRequest struct {
-	Currency domain.Currency
+	Currency entity.Currency
 	Amount   float64
 }
 
@@ -17,11 +17,11 @@ type WithdrawUseCaseInput interface {
 }
 
 type WithdrawUseCase struct {
-	balance   *domain.Balance
-	opStorage domain.OperationStorage
+	balance   *entity.Balance
+	opStorage entity.OperationStorage
 }
 
-func NewWithdrawUseCase(balance *domain.Balance, opStorage domain.OperationStorage) *WithdrawUseCase {
+func NewWithdrawUseCase(balance *entity.Balance, opStorage entity.OperationStorage) *WithdrawUseCase {
 	return &WithdrawUseCase{
 		balance:   balance,
 		opStorage: opStorage,
@@ -32,7 +32,7 @@ func (ucase *WithdrawUseCase) Execute(req WithdrawRequest) error {
 	if err := ucase.balance.Sub(req.Currency, req.Amount); err != nil {
 		return fmt.Errorf("execute withdraw operation: %v", err)
 	}
-	op := domain.NewCurrencyOperation(domain.WithdrawOperation, req.Currency, req.Amount, time.Now().Unix(), nil, nil)
+	op := entity.NewCurrencyOperation(entity.WithdrawOperation, req.Currency, req.Amount, time.Now().Unix(), nil, nil)
 	if err := ucase.opStorage.Save(op); err != nil {
 		return fmt.Errorf("execute withdraw operation: %v", err)
 	}

@@ -1,16 +1,16 @@
 package usecase
 
-import "github.com/dmitruk-v/piggy-bank/internal/domain"
+import "github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 
 type ShowBalanceUseCaseInput interface {
 	Execute() error
 }
 
 type ShowBalanceUseCase struct {
-	balance *domain.Balance
+	balance *entity.Balance
 }
 
-func NewShowBalanceUseCase(balance *domain.Balance) *ShowBalanceUseCase {
+func NewShowBalanceUseCase(balance *entity.Balance) *ShowBalanceUseCase {
 	return &ShowBalanceUseCase{
 		balance: balance,
 	}

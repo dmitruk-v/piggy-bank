@@ -9,7 +9,7 @@ import (
 type CommandType int
 
 const (
-	InfoCommand = iota + 1
+	ShowHelpCommand = iota + 1
 	QuitCommand
 	DepositCommand
 	WithdrawCommand

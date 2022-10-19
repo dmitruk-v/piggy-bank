@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/dmitruk-v/piggy-bank/internal/common"
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
 type DepositRequest struct {
-	Currency domain.Currency
+	Currency entity.Currency
 	Amount   float64
 }
 
@@ -23,12 +23,12 @@ type DepositResponse struct {
 }
 
 type DepositUseCase struct {
-	balance   *domain.Balance
-	opStorage domain.OperationStorage
+	balance   *entity.Balance
+	opStorage entity.OperationStorage
 	bcService common.BlockchainService
 }
 
-func NewDepositUseCase(balance *domain.Balance, opStorage domain.OperationStorage, bcService common.BlockchainService) *DepositUseCase {
+func NewDepositUseCase(balance *entity.Balance, opStorage entity.OperationStorage, bcService common.BlockchainService) *DepositUseCase {
 	return &DepositUseCase{
 		balance:   balance,
 		opStorage: opStorage,
@@ -55,7 +55,7 @@ func (ucase *DepositUseCase) Execute(req DepositRequest) DepositResponse {
 	if len(lops) > 0 {
 		prevHash = lops[len(lops)-1].Hash
 	}
-	op := domain.NewCurrencyOperation(domain.DepositOperation, req.Currency, req.Amount, time.Now().Unix(), hash, prevHash)
+	op := entity.NewCurrencyOperation(entity.DepositOperation, req.Currency, req.Amount, time.Now().Unix(), hash, prevHash)
 	if err := ucase.opStorage.Save(op); err != nil {
 		res.Err = fmt.Errorf("execute deposit operation: %v", err)
 		return res

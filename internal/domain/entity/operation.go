@@ -1,4 +1,4 @@
-package domain
+package entity
 
 type OperationStorage interface {
 	GetAll() ([]*CurrencyOperation, error)

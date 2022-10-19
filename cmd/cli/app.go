@@ -9,17 +9,24 @@ import (
 
 type CliApp struct {
 	commands Commands
+	onStart  *Command
 	canQuit  bool
 }
 
-func NewCliApp(commands Commands) *CliApp {
+func NewCliApp(commands Commands, onStart *Command) *CliApp {
 	return &CliApp{
 		commands: commands,
+		onStart:  onStart,
 	}
 }
 
 func (app *CliApp) Run() error {
-	app.info()
+	if app.onStart != nil {
+		fmt.Printf("%#v\n", app.onStart.Controller)
+		if err := app.executeCommand(app.onStart); err != nil {
+			fmt.Println(err)
+		}
+	}
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		if app.canQuit {
@@ -41,10 +48,6 @@ func (app *CliApp) Run() error {
 			continue
 		}
 	}
-}
-
-func (app *CliApp) info() {
-	fmt.Print(infoTemplate)
 }
 
 func (app *CliApp) matchCommand(input string) (*Command, error) {
@@ -75,10 +78,23 @@ func (app *CliApp) executeCommand(cmd *Command) error {
 	switch cmd.Type {
 	case QuitCommand:
 		app.canQuit = true
-	case InfoCommand:
-		app.info()
 	default:
 		return cmd.Controller.Handle(cmd.Params)
 	}
 	return nil
 }
+
+func (app *CliApp) Help() {
+	for _, cmd := range app.commands {
+		if cmd.Type == ShowHelpCommand {
+			if err := app.executeCommand(cmd); err != nil {
+				fmt.Println(err)
+			}
+			return
+		}
+	}
+}
+
+// func (app *CliApp) commandByType(ct CommandType) (*Command, error) {
+// 	return nil, nil
+// }

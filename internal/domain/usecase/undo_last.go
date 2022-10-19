@@ -3,15 +3,15 @@ package usecase
 import (
 	"fmt"
 
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
 type UndoLastUseCase struct {
-	balance   *domain.Balance
-	opStorage domain.OperationStorage
+	balance   *entity.Balance
+	opStorage entity.OperationStorage
 }
 
-func NewUndoLastUseCase(balance *domain.Balance, opStorage domain.OperationStorage) *UndoLastUseCase {
+func NewUndoLastUseCase(balance *entity.Balance, opStorage entity.OperationStorage) *UndoLastUseCase {
 	return &UndoLastUseCase{
 		balance:   balance,
 		opStorage: opStorage,
@@ -24,11 +24,11 @@ func (ucase *UndoLastUseCase) Execute() error {
 		return fmtError(err)
 	}
 	switch op.Optype {
-	case domain.DepositOperation:
+	case entity.DepositOperation:
 		if err := ucase.balance.Sub(op.Currency, op.Amount); err != nil {
 			return fmtError(err)
 		}
-	case domain.WithdrawOperation:
+	case entity.WithdrawOperation:
 		if err := ucase.balance.Add(op.Currency, op.Amount); err != nil {
 			return fmtError(err)
 		}

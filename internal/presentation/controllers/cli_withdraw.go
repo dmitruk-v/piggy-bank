@@ -3,8 +3,8 @@ package controllers
 import (
 	"fmt"
 
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
-	"github.com/dmitruk-v/piggy-bank/internal/usecase"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/usecase"
 )
 
 type CliWithdrawController struct {
@@ -24,7 +24,7 @@ func (ctrl *CliWithdrawController) Handle(req CliRequest) error {
 
 	fmt.Println(curr, amt)
 	res := ctrl.withdrawUcase.Execute(usecase.WithdrawRequest{
-		Currency: domain.EUR,
+		Currency: entity.EUR,
 		Amount:   123.45,
 	})
 	_ = res

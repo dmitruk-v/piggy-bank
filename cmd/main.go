@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/dmitruk-v/piggy-bank/cmd/cli"
 	"github.com/dmitruk-v/piggy-bank/internal/common"
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/usecase"
 	"github.com/dmitruk-v/piggy-bank/internal/presentation/controllers"
-
+	"github.com/dmitruk-v/piggy-bank/internal/presentation/presenters"
 	"github.com/dmitruk-v/piggy-bank/internal/storage"
-	"github.com/dmitruk-v/piggy-bank/internal/usecase"
 )
 
 func main() {
@@ -22,8 +23,8 @@ func main() {
 func run() error {
 	opStorage := storage.NewFileOperationStorage("operations.data")
 
-	currencies := []domain.Currency{domain.USD, domain.EUR, domain.RUB, domain.UAH}
-	balance := domain.NewBalance(currencies)
+	currencies := []entity.Currency{entity.USD, entity.EUR, entity.RUB, entity.UAH}
+	balance := entity.NewBalance(currencies)
 
 	loadBalanceUcase := usecase.NewLoadBalanceUseCase(balance, opStorage)
 	if err := loadBalanceUcase.Execute(); err != nil {
@@ -32,25 +33,32 @@ func run() error {
 
 	blockChainService := common.NewBlockchainServiceImpl()
 
+	showHelpPresenter := presenters.NewCliShowHelpPresenter(os.Stdout)
+	showHelpUcase := usecase.NewShowHelpUseCase(showHelpPresenter)
+	showHelpController := controllers.NewCliShowHelpController(showHelpUcase)
+
 	depositUcase := usecase.NewDepositUseCase(balance, opStorage, blockChainService)
 	depositController := controllers.NewCliDepositController(depositUcase)
+
 	withdrawUcase := usecase.NewWithdrawUseCase(balance, opStorage)
 	withdrawController := controllers.NewCliWithdrawController(withdrawUcase)
 
-	showOpsUcase := usecase.NewShowOperationsUseCase(opStorage)
+	showOpsPresenter := presenters.NewCliShowOperationsPresenter(os.Stdout)
+	showOpsUcase := usecase.NewShowOperationsUseCase(opStorage, showOpsPresenter)
 	showOpsController := controllers.NewCliShowOperationsController(showOpsUcase)
 
 	fmt.Println(balance)
 
-	app := cli.NewCliApp(cli.Commands{
-		cli.NewCommand(cli.InfoCommand, `^info$`, nil),
+	commands := cli.Commands{
+		cli.NewCommand(cli.ShowHelpCommand, `^help$`, showHelpController),
 		cli.NewCommand(cli.QuitCommand, `^quit$`, nil),
 		cli.NewCommand(cli.DepositCommand, `^deposit (?P<currency>[a-zA-Z]{3}) (?P<amount>[0-9]+)$`, depositController),
 		cli.NewCommand(cli.WithdrawCommand, `^withdraw (?P<currency>[a-zA-Z]{3}) (?P<amount>[0-9]+)$`, withdrawController),
 		cli.NewCommand(cli.ShowBalanceCommand, `^balance$`, nil),
-		cli.NewCommand(cli.ShowOperationsCommand, `^operations$`, showOpsController),
+		cli.NewCommand(cli.ShowOperationsCommand, `^operations|ops$`, showOpsController),
 		cli.NewCommand(cli.UndoCommand, `^undo$`, nil),
-	})
+	}
+	app := cli.NewCliApp(commands, commands[0])
 
 	return app.Run()
 }

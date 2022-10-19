@@ -3,15 +3,15 @@ package usecase
 import (
 	"fmt"
 
-	"github.com/dmitruk-v/piggy-bank/internal/domain"
+	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
 type LoadBalanceUseCase struct {
-	balance   *domain.Balance
-	opStorage domain.OperationStorage
+	balance   *entity.Balance
+	opStorage entity.OperationStorage
 }
 
-func NewLoadBalanceUseCase(balance *domain.Balance, opStorage domain.OperationStorage) *LoadBalanceUseCase {
+func NewLoadBalanceUseCase(balance *entity.Balance, opStorage entity.OperationStorage) *LoadBalanceUseCase {
 	return &LoadBalanceUseCase{
 		balance:   balance,
 		opStorage: opStorage,
@@ -26,9 +26,9 @@ func (ucase *LoadBalanceUseCase) Execute() error {
 	var opErr error
 	for _, op := range ops {
 		switch op.Optype {
-		case domain.DepositOperation:
+		case entity.DepositOperation:
 			opErr = ucase.balance.Add(op.Currency, op.Amount)
-		case domain.WithdrawOperation:
+		case entity.WithdrawOperation:
 			opErr = ucase.balance.Sub(op.Currency, op.Amount)
 		default:
 			opErr = fmt.Errorf("unknown operation type: %v", op.Optype)
