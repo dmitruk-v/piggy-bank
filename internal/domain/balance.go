@@ -8,7 +8,7 @@ type Balance struct {
 	currencies map[Currency]float64
 }
 
-func NewBalance(cc ...Currency) *Balance {
+func NewBalance(cc []Currency) *Balance {
 	cm := make(map[Currency]float64)
 	for i := range cc {
 		curr := cc[i]

@@ -16,7 +16,7 @@ func NewStubOperationStorage() *StubOperationStorage {
 	}
 }
 
-func (stg *StubOperationStorage) List() ([]*domain.CurrencyOperation, error) {
+func (stg *StubOperationStorage) GetAll() ([]*domain.CurrencyOperation, error) {
 	return stg.operations, nil
 }
 

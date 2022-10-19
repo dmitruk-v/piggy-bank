@@ -7,23 +7,32 @@ import (
 	"github.com/dmitruk-v/piggy-bank/internal/domain"
 )
 
-type WithdrawUseCase struct {
-	balance   *domain.Balance
-	opStorage OperationStorage
+type WithdrawRequest struct {
+	Currency domain.Currency
+	Amount   float64
 }
 
-func NewWithdrawUseCase(balance *domain.Balance, opStorage OperationStorage) *WithdrawUseCase {
+type WithdrawUseCaseInput interface {
+	Execute(req WithdrawRequest) error
+}
+
+type WithdrawUseCase struct {
+	balance   *domain.Balance
+	opStorage domain.OperationStorage
+}
+
+func NewWithdrawUseCase(balance *domain.Balance, opStorage domain.OperationStorage) *WithdrawUseCase {
 	return &WithdrawUseCase{
 		balance:   balance,
 		opStorage: opStorage,
 	}
 }
 
-func (ucase *WithdrawUseCase) Execute(currency domain.Currency, amount float64) error {
-	if err := ucase.balance.Sub(currency, amount); err != nil {
+func (ucase *WithdrawUseCase) Execute(req WithdrawRequest) error {
+	if err := ucase.balance.Sub(req.Currency, req.Amount); err != nil {
 		return fmt.Errorf("execute withdraw operation: %v", err)
 	}
-	op := domain.NewCurrencyOperation(domain.WithdrawOperation, currency, amount, time.Now().Unix())
+	op := domain.NewCurrencyOperation(domain.WithdrawOperation, req.Currency, req.Amount, time.Now().Unix(), nil, nil)
 	if err := ucase.opStorage.Save(op); err != nil {
 		return fmt.Errorf("execute withdraw operation: %v", err)
 	}

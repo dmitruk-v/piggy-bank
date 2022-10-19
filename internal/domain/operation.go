@@ -1,5 +1,12 @@
 package domain
 
+type OperationStorage interface {
+	GetAll() ([]*CurrencyOperation, error)
+	GetLatest(n int) ([]*CurrencyOperation, error)
+	Save(op *CurrencyOperation) error
+	DeleteLast() (*CurrencyOperation, error)
+}
+
 type OperationType int64
 
 const (
@@ -12,13 +19,17 @@ type CurrencyOperation struct {
 	Currency   Currency
 	Amount     float64
 	ProvidedAt int64
+	Hash       []byte
+	PrevHash   []byte
 }
 
-func NewCurrencyOperation(optype OperationType, currency Currency, amount float64, providedAt int64) *CurrencyOperation {
+func NewCurrencyOperation(optype OperationType, currency Currency, amount float64, providedAt int64, hash []byte, prevHash []byte) *CurrencyOperation {
 	return &CurrencyOperation{
 		Optype:     optype,
 		Currency:   currency,
 		Amount:     amount,
 		ProvidedAt: providedAt,
+		Hash:       hash,
+		PrevHash:   prevHash,
 	}
 }

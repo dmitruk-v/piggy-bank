@@ -8,10 +8,10 @@ import (
 
 type UndoLastUseCase struct {
 	balance   *domain.Balance
-	opStorage OperationStorage
+	opStorage domain.OperationStorage
 }
 
-func NewUndoLastUseCase(balance *domain.Balance, opStorage OperationStorage) *UndoLastUseCase {
+func NewUndoLastUseCase(balance *domain.Balance, opStorage domain.OperationStorage) *UndoLastUseCase {
 	return &UndoLastUseCase{
 		balance:   balance,
 		opStorage: opStorage,
