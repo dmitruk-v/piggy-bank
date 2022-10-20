@@ -6,6 +6,10 @@ import (
 	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
+type LoadBalanceUseCaseInput interface {
+	Execute() error
+}
+
 type LoadBalanceUseCase struct {
 	balance   *entity.Balance
 	opStorage entity.OperationStorage

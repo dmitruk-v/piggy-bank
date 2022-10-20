@@ -6,16 +6,28 @@ type ShowBalanceUseCaseInput interface {
 	Execute() error
 }
 
-type ShowBalanceUseCase struct {
-	balance *entity.Balance
+type ShowBalanceUseCaseOutput interface {
+	Present(res ShowBalanceResponse) error
 }
 
-func NewShowBalanceUseCase(balance *entity.Balance) *ShowBalanceUseCase {
+type ShowBalanceResponse struct {
+	Balance *entity.Balance
+}
+
+type ShowBalanceUseCase struct {
+	balance *entity.Balance
+	output  ShowBalanceUseCaseOutput
+}
+
+func NewShowBalanceUseCase(balance *entity.Balance, output ShowBalanceUseCaseOutput) *ShowBalanceUseCase {
 	return &ShowBalanceUseCase{
 		balance: balance,
+		output:  output,
 	}
 }
 
 func (ucase *ShowBalanceUseCase) Execute() error {
-	return nil
+	return ucase.output.Present(ShowBalanceResponse{
+		Balance: ucase.balance,
+	})
 }

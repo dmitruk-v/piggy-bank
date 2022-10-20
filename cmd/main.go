@@ -43,6 +43,10 @@ func run() error {
 	withdrawUcase := usecase.NewWithdrawUseCase(balance, opStorage)
 	withdrawController := controllers.NewCliWithdrawController(withdrawUcase)
 
+	showBalancePresenter := presenters.NewCliShowBalancePresenter(os.Stdout)
+	showBalanceUcase := usecase.NewShowBalanceUseCase(balance, showBalancePresenter)
+	showBalanceController := controllers.NewCliShowBalanceController(showBalanceUcase)
+
 	showOpsPresenter := presenters.NewCliShowOperationsPresenter(os.Stdout)
 	showOpsUcase := usecase.NewShowOperationsUseCase(opStorage, showOpsPresenter)
 	showOpsController := controllers.NewCliShowOperationsController(showOpsUcase)
@@ -54,7 +58,7 @@ func run() error {
 		cli.NewCommand(cli.QuitCommand, `^quit$`, nil),
 		cli.NewCommand(cli.DepositCommand, `^deposit (?P<currency>[a-zA-Z]{3}) (?P<amount>[0-9]+)$`, depositController),
 		cli.NewCommand(cli.WithdrawCommand, `^withdraw (?P<currency>[a-zA-Z]{3}) (?P<amount>[0-9]+)$`, withdrawController),
-		cli.NewCommand(cli.ShowBalanceCommand, `^balance$`, nil),
+		cli.NewCommand(cli.ShowBalanceCommand, `^balance$`, showBalanceController),
 		cli.NewCommand(cli.ShowOperationsCommand, `^operations|ops$`, showOpsController),
 		cli.NewCommand(cli.UndoCommand, `^undo$`, nil),
 	}

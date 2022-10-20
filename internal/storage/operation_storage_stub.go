@@ -25,7 +25,7 @@ func (stg *StubOperationStorage) Save(op *entity.CurrencyOperation) error {
 	return nil
 }
 
-func (stg *StubOperationStorage) DeleteLast() (*entity.CurrencyOperation, error) {
+func (stg *StubOperationStorage) DeleteLatest() (*entity.CurrencyOperation, error) {
 	if len(stg.operations) == 0 {
 		return nil, fmt.Errorf("there are no operations yet")
 	}

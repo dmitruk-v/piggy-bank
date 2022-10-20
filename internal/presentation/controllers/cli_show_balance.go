@@ -12,6 +12,7 @@ func NewCliShowBalanceController(showBalanceUcase usecase.ShowBalanceUseCaseInpu
 	}
 }
 
-func (ctrl *CliShowBalanceController) Execute() error {
+func (ctrl *CliShowBalanceController) Handle(req CliRequest) error {
+	ctrl.showBalanceUcase.Execute()
 	return nil
 }

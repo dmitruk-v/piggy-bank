@@ -19,7 +19,7 @@ func NewUndoLastUseCase(balance *entity.Balance, opStorage entity.OperationStora
 }
 
 func (ucase *UndoLastUseCase) Execute() error {
-	op, err := ucase.opStorage.DeleteLast()
+	op, err := ucase.opStorage.DeleteLatest()
 	if err != nil {
 		return fmtError(err)
 	}

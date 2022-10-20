@@ -4,7 +4,7 @@ type OperationStorage interface {
 	GetAll() ([]*CurrencyOperation, error)
 	GetLatest(n int) ([]*CurrencyOperation, error)
 	Save(op *CurrencyOperation) error
-	DeleteLast() (*CurrencyOperation, error)
+	DeleteLatest() (*CurrencyOperation, error)
 }
 
 type OperationType int64

@@ -55,6 +55,9 @@ func (ucase *DepositUseCase) Execute(req DepositRequest) DepositResponse {
 	if len(lops) > 0 {
 		prevHash = lops[len(lops)-1].Hash
 	}
+	//
+	// TODO: make generated hash to depend on operation details
+	//
 	op := entity.NewCurrencyOperation(entity.DepositOperation, req.Currency, req.Amount, time.Now().Unix(), hash, prevHash)
 	if err := ucase.opStorage.Save(op); err != nil {
 		res.Err = fmt.Errorf("execute deposit operation: %v", err)

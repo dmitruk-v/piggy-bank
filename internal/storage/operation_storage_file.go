@@ -108,7 +108,7 @@ func (stg *FileOperationStorage) Save(op *entity.CurrencyOperation) error {
 	return nil
 }
 
-func (stg *FileOperationStorage) DeleteLast() (*entity.CurrencyOperation, error) {
+func (stg *FileOperationStorage) DeleteLatest() (*entity.CurrencyOperation, error) {
 	return nil, nil
 }
 

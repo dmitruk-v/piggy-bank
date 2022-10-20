@@ -22,7 +22,6 @@ func NewCliApp(commands Commands, onStart *Command) *CliApp {
 
 func (app *CliApp) Run() error {
 	if app.onStart != nil {
-		fmt.Printf("%#v\n", app.onStart.Controller)
 		if err := app.executeCommand(app.onStart); err != nil {
 			fmt.Println(err)
 		}
@@ -79,22 +78,13 @@ func (app *CliApp) executeCommand(cmd *Command) error {
 	case QuitCommand:
 		app.canQuit = true
 	default:
-		return cmd.Controller.Handle(cmd.Params)
+		if cmd.Controller == nil {
+			return fmt.Errorf("execute command %v: nil controller", cmd)
+		}
+		err := cmd.Controller.Handle(cmd.Params)
+		if err != nil {
+			return fmt.Errorf("execute command %v: %v", cmd, err)
+		}
 	}
 	return nil
 }
-
-func (app *CliApp) Help() {
-	for _, cmd := range app.commands {
-		if cmd.Type == ShowHelpCommand {
-			if err := app.executeCommand(cmd); err != nil {
-				fmt.Println(err)
-			}
-			return
-		}
-	}
-}
-
-// func (app *CliApp) commandByType(ct CommandType) (*Command, error) {
-// 	return nil, nil
-// }
