@@ -5,7 +5,13 @@ import (
 	"sort"
 )
 
-type Balance struct {
+type Balance interface {
+	Add(curr Currency, amount float64) error
+	Sub(curr Currency, amount float64) error
+	List() BalanceItems
+}
+
+type BalanceImpl struct {
 	currencies map[Currency]float64
 }
 
@@ -14,39 +20,38 @@ type BalanceItem struct {
 	Amount float64
 }
 
-func NewBalance(cc []Currency) *Balance {
-	cm := make(map[Currency]float64)
-	for i := range cc {
-		curr := cc[i]
-		cm[curr] = 0
+func NewBalanceImpl(cc ...Currency) *BalanceImpl {
+	cmap := make(map[Currency]float64)
+	for _, curr := range cc {
+		cmap[curr] = 0
 	}
-	return &Balance{
-		currencies: cm,
+	return &BalanceImpl{
+		currencies: cmap,
 	}
 }
 
-func (bal *Balance) Add(currency Currency, amount float64) error {
-	_, ok := bal.currencies[currency]
+func (bal *BalanceImpl) Add(curr Currency, amount float64) error {
+	_, ok := bal.currencies[curr]
 	if !ok {
-		return fmt.Errorf("balance does not have %v currency", currency)
+		return fmt.Errorf("balance does not have %v currency", curr)
 	}
-	bal.currencies[currency] += amount
+	bal.currencies[curr] += amount
 	return nil
 }
 
-func (bal *Balance) Sub(currency Currency, amount float64) error {
-	val, ok := bal.currencies[currency]
+func (bal *BalanceImpl) Sub(curr Currency, amount float64) error {
+	val, ok := bal.currencies[curr]
 	if !ok {
-		return fmt.Errorf("balance does not have %v currency", currency)
+		return fmt.Errorf("balance does not have %v currency", curr)
 	}
 	if val < amount {
-		return fmt.Errorf("not enought %v currency: %v, %v needed", currency, val, amount)
+		return fmt.Errorf("not enought %v currency: %v, %v needed", curr, val, amount)
 	}
-	bal.currencies[currency] -= amount
+	bal.currencies[curr] -= amount
 	return nil
 }
 
-func (bal *Balance) List() BalanceItems {
+func (bal *BalanceImpl) List() BalanceItems {
 	var list BalanceItems
 	for curr, amt := range bal.currencies {
 		list = append(list, BalanceItem{Curr: curr, Amount: amt})

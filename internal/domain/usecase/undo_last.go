@@ -7,11 +7,11 @@ import (
 )
 
 type UndoLastUseCase struct {
-	balance   *entity.Balance
+	balance   entity.Balance
 	opStorage entity.OperationStorage
 }
 
-func NewUndoLastUseCase(balance *entity.Balance, opStorage entity.OperationStorage) *UndoLastUseCase {
+func NewUndoLastUseCase(balance entity.Balance, opStorage entity.OperationStorage) *UndoLastUseCase {
 	return &UndoLastUseCase{
 		balance:   balance,
 		opStorage: opStorage,
@@ -19,6 +19,9 @@ func NewUndoLastUseCase(balance *entity.Balance, opStorage entity.OperationStora
 }
 
 func (ucase *UndoLastUseCase) Execute() error {
+	fmtError := func(err error) error {
+		return fmt.Errorf("execute undo-last operation: %v", err)
+	}
 	op, err := ucase.opStorage.DeleteLatest()
 	if err != nil {
 		return fmtError(err)
@@ -34,8 +37,4 @@ func (ucase *UndoLastUseCase) Execute() error {
 		}
 	}
 	return nil
-}
-
-func fmtError(err error) error {
-	return fmt.Errorf("execute undo-last operation: %v", err)
 }

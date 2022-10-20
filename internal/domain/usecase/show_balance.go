@@ -11,15 +11,15 @@ type ShowBalanceUseCaseOutput interface {
 }
 
 type ShowBalanceResponse struct {
-	Balance *entity.Balance
+	Balance entity.Balance
 }
 
 type ShowBalanceUseCase struct {
-	balance *entity.Balance
+	balance entity.Balance
 	output  ShowBalanceUseCaseOutput
 }
 
-func NewShowBalanceUseCase(balance *entity.Balance, output ShowBalanceUseCaseOutput) *ShowBalanceUseCase {
+func NewShowBalanceUseCase(balance entity.Balance, output ShowBalanceUseCaseOutput) *ShowBalanceUseCase {
 	return &ShowBalanceUseCase{
 		balance: balance,
 		output:  output,

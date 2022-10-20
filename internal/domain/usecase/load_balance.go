@@ -11,11 +11,11 @@ type LoadBalanceUseCaseInput interface {
 }
 
 type LoadBalanceUseCase struct {
-	balance   *entity.Balance
+	balance   entity.Balance
 	opStorage entity.OperationStorage
 }
 
-func NewLoadBalanceUseCase(balance *entity.Balance, opStorage entity.OperationStorage) *LoadBalanceUseCase {
+func NewLoadBalanceUseCase(balance entity.Balance, opStorage entity.OperationStorage) *LoadBalanceUseCase {
 	return &LoadBalanceUseCase{
 		balance:   balance,
 		opStorage: opStorage,

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -22,22 +21,18 @@ func main() {
 
 func run() error {
 	opStorage := storage.NewFileOperationStorage("operations.data")
-
-	currencies := []entity.Currency{entity.USD, entity.EUR, entity.RUB, entity.UAH}
-	balance := entity.NewBalance(currencies)
+	balance := entity.NewBalanceImpl(entity.USD, entity.EUR, entity.RUB, entity.UAH)
+	blockChainService := common.NewBlockchainServiceImpl()
 
 	loadBalanceUcase := usecase.NewLoadBalanceUseCase(balance, opStorage)
-	if err := loadBalanceUcase.Execute(); err != nil {
-		log.Fatal(err)
-	}
-
-	blockChainService := common.NewBlockchainServiceImpl()
+	loadBalanceController := controllers.NewCliLoadBalanceController(loadBalanceUcase)
 
 	showHelpPresenter := presenters.NewCliShowHelpPresenter(os.Stdout)
 	showHelpUcase := usecase.NewShowHelpUseCase(showHelpPresenter)
 	showHelpController := controllers.NewCliShowHelpController(showHelpUcase)
 
-	depositUcase := usecase.NewDepositUseCase(balance, opStorage, blockChainService)
+	depositPresenter := presenters.NewCliDepositPresenter(os.Stdout)
+	depositUcase := usecase.NewDepositUseCase(balance, opStorage, blockChainService, depositPresenter)
 	depositController := controllers.NewCliDepositController(depositUcase)
 
 	withdrawUcase := usecase.NewWithdrawUseCase(balance, opStorage)
@@ -51,9 +46,8 @@ func run() error {
 	showOpsUcase := usecase.NewShowOperationsUseCase(opStorage, showOpsPresenter)
 	showOpsController := controllers.NewCliShowOperationsController(showOpsUcase)
 
-	fmt.Println(balance)
-
 	commands := cli.Commands{
+		cli.NewCommand(cli.LoadBalance, `^load$`, loadBalanceController),
 		cli.NewCommand(cli.ShowHelpCommand, `^help$`, showHelpController),
 		cli.NewCommand(cli.QuitCommand, `^quit$`, nil),
 		cli.NewCommand(cli.DepositCommand, `^deposit (?P<currency>[a-zA-Z]{3}) (?P<amount>[0-9]+)$`, depositController),
@@ -62,7 +56,7 @@ func run() error {
 		cli.NewCommand(cli.ShowOperationsCommand, `^operations|ops$`, showOpsController),
 		cli.NewCommand(cli.UndoCommand, `^undo$`, nil),
 	}
-	app := cli.NewCliApp(commands, commands[0])
+	app := cli.NewCliApp(commands, cli.LoadBalance, cli.ShowHelpCommand)
 
 	return app.Run()
 }

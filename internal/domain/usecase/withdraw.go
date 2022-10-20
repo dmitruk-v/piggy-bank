@@ -17,11 +17,11 @@ type WithdrawUseCaseInput interface {
 }
 
 type WithdrawUseCase struct {
-	balance   *entity.Balance
+	balance   entity.Balance
 	opStorage entity.OperationStorage
 }
 
-func NewWithdrawUseCase(balance *entity.Balance, opStorage entity.OperationStorage) *WithdrawUseCase {
+func NewWithdrawUseCase(balance entity.Balance, opStorage entity.OperationStorage) *WithdrawUseCase {
 	return &WithdrawUseCase{
 		balance:   balance,
 		opStorage: opStorage,

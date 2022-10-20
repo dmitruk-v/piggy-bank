@@ -9,11 +9,11 @@ import (
 
 type CliApp struct {
 	commands Commands
-	onStart  *Command
+	onStart  []CommandType
 	canQuit  bool
 }
 
-func NewCliApp(commands Commands, onStart *Command) *CliApp {
+func NewCliApp(commands Commands, onStart ...CommandType) *CliApp {
 	return &CliApp{
 		commands: commands,
 		onStart:  onStart,
@@ -21,8 +21,9 @@ func NewCliApp(commands Commands, onStart *Command) *CliApp {
 }
 
 func (app *CliApp) Run() error {
-	if app.onStart != nil {
-		if err := app.executeCommand(app.onStart); err != nil {
+	for _, cmdtype := range app.onStart {
+		cmd := app.commands[cmdtype]
+		if err := app.executeCommand(cmd); err != nil {
 			fmt.Println(err)
 		}
 	}

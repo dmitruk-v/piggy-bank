@@ -67,6 +67,7 @@ func (stg *FileOperationStorage) GetLatest(num int) ([]*entity.CurrencyOperation
 	if err != nil {
 		return nil, err
 	}
+	var ops []*entity.CurrencyOperation
 	size := int64(256)
 	for {
 		buf := make([]byte, size)
@@ -77,11 +78,11 @@ func (stg *FileOperationStorage) GetLatest(num int) ([]*entity.CurrencyOperation
 		n, _ := f.ReadAt(buf, newOff)
 		lines := bytes.Fields(buf[:n])
 		if newOff == 0 && len(lines) < num {
-			return nil, fmt.Errorf("get latest operations: not enought operations")
+			// here we can also return some named error
+			return ops, nil
 		}
 		if len(lines) >= num {
 			lines = lines[len(lines)-num:]
-			ops := make([]*entity.CurrencyOperation, 0)
 			for _, ln := range lines {
 				op, err := stg.OperationFromString(string(ln))
 				if err != nil {

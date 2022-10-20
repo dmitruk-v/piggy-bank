@@ -24,7 +24,7 @@ func (pr *CliShowBalancePresenter) Present(res usecase.ShowBalanceResponse) erro
 	fmt.Fprintln(tw, "#\tCurrency\tAmount")
 	fmt.Fprintln(tw, "---\t--------\t------")
 	for i, item := range res.Balance.List() {
-		fmt.Fprintf(tw, "%v\t%v\t%v\n", i, item.Curr, item.Amount)
+		fmt.Fprintf(tw, "%v\t%v\t%v\n", i+1, item.Curr, item.Amount)
 	}
 	fmt.Fprintln(tw)
 	return tw.Flush()
