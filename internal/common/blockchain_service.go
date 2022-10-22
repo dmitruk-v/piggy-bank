@@ -8,7 +8,7 @@ import (
 )
 
 type BlockchainService interface {
-	Hash() ([]byte, error)
+	Hash(src []byte) ([]byte, error)
 }
 
 type BlockchainServiceImpl struct {
@@ -22,14 +22,10 @@ func NewBlockchainServiceImpl() *BlockchainServiceImpl {
 	}
 }
 
-func (svc *BlockchainServiceImpl) Hash() ([]byte, error) {
-	buf := make([]byte, 32)
-	_, err := svc.rand.Read(buf)
-	if err != nil {
-		return nil, fmt.Errorf("create hash: %v", err)
-	}
+func (svc *BlockchainServiceImpl) Hash(src []byte) ([]byte, error) {
+	buf := make([]byte, len(src))
 	hash := sha256.New()
-	_, err = hash.Write(buf)
+	_, err := hash.Write(buf)
 	if err != nil {
 		return nil, fmt.Errorf("create hash: %v", err)
 	}

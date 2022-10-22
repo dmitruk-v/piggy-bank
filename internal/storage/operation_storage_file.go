@@ -57,7 +57,7 @@ func (stg *FileOperationStorage) GetAll() ([]*entity.CurrencyOperation, error) {
 	return ops, nil
 }
 
-func (stg *FileOperationStorage) GetLatest(num int) ([]*entity.CurrencyOperation, error) {
+func (stg *FileOperationStorage) PopLatest(num int) ([]*entity.CurrencyOperation, error) {
 	f, err := os.Open(stg.filename)
 	if err != nil {
 		return nil, fmt.Errorf("get latest operations: %v", err)
@@ -107,10 +107,6 @@ func (stg *FileOperationStorage) Save(op *entity.CurrencyOperation) error {
 		return fmt.Errorf("save operation: %v", err)
 	}
 	return nil
-}
-
-func (stg *FileOperationStorage) DeleteLatest() (*entity.CurrencyOperation, error) {
-	return nil, nil
 }
 
 func (stg *FileOperationStorage) OperationFromString(s string) (*entity.CurrencyOperation, error) {

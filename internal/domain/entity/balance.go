@@ -6,6 +6,7 @@ import (
 )
 
 type Balance interface {
+	HasCurrency(curr Currency) bool
 	Add(curr Currency, amount float64) error
 	Sub(curr Currency, amount float64) error
 	List() BalanceItems
@@ -28,6 +29,11 @@ func NewBalanceImpl(cc ...Currency) *BalanceImpl {
 	return &BalanceImpl{
 		currencies: cmap,
 	}
+}
+
+func (bal *BalanceImpl) HasCurrency(curr Currency) bool {
+	_, ok := bal.currencies[curr]
+	return ok
 }
 
 func (bal *BalanceImpl) Add(curr Currency, amount float64) error {

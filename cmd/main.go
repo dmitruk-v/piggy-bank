@@ -23,6 +23,7 @@ func run() error {
 	opStorage := storage.NewFileOperationStorage("operations.data")
 	balance := entity.NewBalanceImpl(entity.USD, entity.EUR, entity.RUB, entity.UAH)
 	blockChainService := common.NewBlockchainServiceImpl()
+	opCreator := entity.NewOperationsCreatorImpl(blockChainService)
 
 	loadBalanceUcase := usecase.NewLoadBalanceUseCase(balance, opStorage)
 	loadBalanceController := controllers.NewCliLoadBalanceController(loadBalanceUcase)
@@ -32,7 +33,7 @@ func run() error {
 	showHelpController := controllers.NewCliShowHelpController(showHelpUcase)
 
 	depositPresenter := presenters.NewCliDepositPresenter(os.Stdout)
-	depositUcase := usecase.NewDepositUseCase(balance, opStorage, blockChainService, depositPresenter)
+	depositUcase := usecase.NewDepositUseCase(balance, opStorage, opCreator, depositPresenter)
 	depositController := controllers.NewCliDepositController(depositUcase)
 
 	withdrawUcase := usecase.NewWithdrawUseCase(balance, opStorage)

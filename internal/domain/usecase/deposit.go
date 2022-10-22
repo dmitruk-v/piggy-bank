@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dmitruk-v/piggy-bank/internal/common"
 	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
@@ -29,15 +28,15 @@ type DepositResponse struct {
 type DepositUseCase struct {
 	balance   entity.Balance
 	opStorage entity.OperationStorage
-	bcService common.BlockchainService
+	opCreator entity.OperationCreator
 	output    DepositUseCaseOutput
 }
 
-func NewDepositUseCase(balance entity.Balance, opStorage entity.OperationStorage, bcService common.BlockchainService, output DepositUseCaseOutput) *DepositUseCase {
+func NewDepositUseCase(balance entity.Balance, opStorage entity.OperationStorage, opCreator entity.OperationCreator, output DepositUseCaseOutput) *DepositUseCase {
 	return &DepositUseCase{
 		balance:   balance,
 		opStorage: opStorage,
-		bcService: bcService,
+		opCreator: opCreator,
 		output:    output,
 	}
 }
@@ -50,7 +49,11 @@ func (ucase *DepositUseCase) Execute(req DepositRequest) {
 	defer func() {
 		ucase.output.Present(res)
 	}()
-	lops, err := ucase.opStorage.GetLatest(1)
+	if err := ucase.validateRequest(req); err != nil {
+		res.Error = fmtError(err)
+		return
+	}
+	lops, err := ucase.opStorage.PopLatest(1)
 	if err != nil {
 		res.Error = fmtError(err)
 		return
@@ -59,18 +62,12 @@ func (ucase *DepositUseCase) Execute(req DepositRequest) {
 	if len(lops) > 0 {
 		prevHash = lops[len(lops)-1].Hash
 	}
-	hash, err := ucase.bcService.Hash()
+	op, err := ucase.opCreator.Create(entity.DepositOperation, req.Currency, req.Amount, time.Now().Unix(), prevHash)
 	if err != nil {
 		res.Error = fmtError(err)
 		return
 	}
-	//
-	// TODO: make generated hash to depend on operation details
-	//
-	// if !ucase.balance.HasCurrency(req.Currency) {
-
-	// }
-	op := entity.NewCurrencyOperation(entity.DepositOperation, req.Currency, req.Amount, time.Now().Unix(), hash, prevHash)
+	res.Operation = op
 	if err := ucase.opStorage.Save(op); err != nil {
 		res.Error = fmtError(err)
 		return
@@ -79,5 +76,14 @@ func (ucase *DepositUseCase) Execute(req DepositRequest) {
 		res.Error = fmtError(err)
 		return
 	}
-	res.Operation = op
+}
+
+func (ucase *DepositUseCase) validateRequest(req DepositRequest) error {
+	if !ucase.balance.HasCurrency(req.Currency) {
+		return fmt.Errorf("validate deposit request: balance does not have currency %q", req.Currency)
+	}
+	if req.Amount < 0 {
+		return fmt.Errorf("validate deposit request: amount must be > 0, got %v", req.Amount)
+	}
+	return nil
 }

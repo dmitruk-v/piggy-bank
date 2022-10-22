@@ -40,8 +40,8 @@ func (pr *CliShowOperationPresenter) Present(res usecase.ShowOperationsResponse)
 			sign = "-"
 		}
 		curr := strings.ToUpper(string(op.Currency))
-		optime := time.UnixMilli(op.ProvidedAt).Format("02/01/2006 15:04:05")
-		fmt.Fprintf(tw, "%v\t%v\t%v\t%v\t%v\n", i, sign, curr, op.Amount, optime)
+		optime := time.Unix(op.ProvidedAt, 0).Format("02/01/2006 15:04:05")
+		fmt.Fprintf(tw, "%v\t%v\t%v\t%v\t%v\n", i+1, sign, curr, op.Amount, optime)
 	}
 	fmt.Fprintln(tw)
 	tw.Flush()
