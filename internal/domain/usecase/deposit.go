@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -49,18 +50,18 @@ func (ucase *DepositUseCase) Execute(req DepositRequest) {
 	defer func() {
 		ucase.output.Present(res)
 	}()
-	if err := ucase.validateRequest(req); err != nil {
-		res.Error = fmtError(err)
-		return
-	}
-	lops, err := ucase.opStorage.PopLatest(1)
-	if err != nil {
-		res.Error = fmtError(err)
-		return
-	}
 	var prevHash []byte
-	if len(lops) > 0 {
-		prevHash = lops[len(lops)-1].Hash
+	lop, err := ucase.opStorage.GetLatest()
+	if err != nil {
+		if !errors.Is(err, entity.ErrNoOperations) {
+			res.Error = fmtError(err)
+			return
+		}
+	}
+	if lop != nil {
+		prevHash = lop.Hash
+	} else {
+		prevHash = nil
 	}
 	op, err := ucase.opCreator.Create(entity.DepositOperation, req.Currency, req.Amount, time.Now().Unix(), prevHash)
 	if err != nil {
@@ -76,14 +77,4 @@ func (ucase *DepositUseCase) Execute(req DepositRequest) {
 		res.Error = fmtError(err)
 		return
 	}
-}
-
-func (ucase *DepositUseCase) validateRequest(req DepositRequest) error {
-	if !ucase.balance.HasCurrency(req.Currency) {
-		return fmt.Errorf("validate deposit request: balance does not have currency %q", req.Currency)
-	}
-	if req.Amount < 0 {
-		return fmt.Errorf("validate deposit request: amount must be > 0, got %v", req.Amount)
-	}
-	return nil
 }

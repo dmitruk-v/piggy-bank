@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -39,9 +38,8 @@ func (pr *CliShowOperationPresenter) Present(res usecase.ShowOperationsResponse)
 		case entity.WithdrawOperation:
 			sign = "-"
 		}
-		curr := strings.ToUpper(string(op.Currency))
 		optime := time.Unix(op.ProvidedAt, 0).Format("02/01/2006 15:04:05")
-		fmt.Fprintf(tw, "%v\t%v\t%v\t%v\t%v\n", i+1, sign, curr, op.Amount, optime)
+		fmt.Fprintf(tw, "%v\t%v\t%v\t%v\t%v\n", i+1, sign, op.Currency, op.Amount, optime)
 	}
 	fmt.Fprintln(tw)
 	tw.Flush()

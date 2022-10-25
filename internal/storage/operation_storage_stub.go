@@ -10,14 +10,21 @@ type StubOperationStorage struct {
 	operations []*entity.CurrencyOperation
 }
 
-func NewStubOperationStorage() *StubOperationStorage {
+func NewStubOperationStorage(initial []*entity.CurrencyOperation) *StubOperationStorage {
 	return &StubOperationStorage{
-		operations: make([]*entity.CurrencyOperation, 0),
+		operations: initial,
 	}
 }
 
 func (stg *StubOperationStorage) GetAll() ([]*entity.CurrencyOperation, error) {
 	return stg.operations, nil
+}
+
+func (stg *StubOperationStorage) GetLatest() (*entity.CurrencyOperation, error) {
+	if len(stg.operations) == 0 {
+		return nil, entity.ErrNoOperations
+	}
+	return stg.operations[len(stg.operations)-1], nil
 }
 
 func (stg *StubOperationStorage) Save(op *entity.CurrencyOperation) error {

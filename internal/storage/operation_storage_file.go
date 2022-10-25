@@ -57,17 +57,19 @@ func (stg *FileOperationStorage) GetAll() ([]*entity.CurrencyOperation, error) {
 	return ops, nil
 }
 
-func (stg *FileOperationStorage) PopLatest(num int) ([]*entity.CurrencyOperation, error) {
+func (stg *FileOperationStorage) GetLatest() (*entity.CurrencyOperation, error) {
+	makeError := func(err error) error {
+		return fmt.Errorf("get latest operation: %v", err)
+	}
 	f, err := os.Open(stg.filename)
 	if err != nil {
-		return nil, fmt.Errorf("get latest operations: %v", err)
+		return nil, makeError(err)
 	}
 	defer f.Close()
 	off, err := f.Seek(0, io.SeekEnd)
 	if err != nil {
 		return nil, err
 	}
-	var ops []*entity.CurrencyOperation
 	size := int64(256)
 	for {
 		buf := make([]byte, size)
@@ -77,20 +79,16 @@ func (stg *FileOperationStorage) PopLatest(num int) ([]*entity.CurrencyOperation
 		}
 		n, _ := f.ReadAt(buf, newOff)
 		lines := bytes.Fields(buf[:n])
-		if newOff == 0 && len(lines) < num {
-			// here we can also return some named error
-			return ops, nil
+		if newOff == 0 && len(lines) == 0 {
+			return nil, entity.ErrNoOperations
 		}
-		if len(lines) >= num {
-			lines = lines[len(lines)-num:]
-			for _, ln := range lines {
-				op, err := stg.OperationFromString(string(ln))
-				if err != nil {
-					return nil, fmt.Errorf("get latest operations: %v", err)
-				}
-				ops = append(ops, op)
+		if len(lines) > 0 {
+			last := lines[len(lines)-1]
+			op, err := stg.OperationFromString(string(last))
+			if err != nil {
+				return nil, makeError(err)
 			}
-			return ops, nil
+			return op, nil
 		}
 		size *= 2
 	}
@@ -109,31 +107,62 @@ func (stg *FileOperationStorage) Save(op *entity.CurrencyOperation) error {
 	return nil
 }
 
+func (stg *FileOperationStorage) DeleteLatest() (*entity.CurrencyOperation, error) {
+	makeError := func(err error) error {
+		return fmt.Errorf("delete latest operation: %v", err)
+	}
+	f, err := os.Open(stg.filename)
+	if err != nil {
+		return nil, makeError(err)
+	}
+	defer f.Close()
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return nil, makeError(err)
+	}
+	data = data[:len(data)-1] // cut last line break (\n)
+	idx := bytes.LastIndex(data, []byte{'\n'})
+	if err := os.WriteFile(stg.filename, data[:idx+1], 0666); err != nil {
+		return nil, makeError(err)
+	}
+	op, err := stg.OperationFromString(string(data[idx+1:]))
+	if err != nil {
+		return nil, makeError(err)
+	}
+	return op, nil
+}
+
 func (stg *FileOperationStorage) OperationFromString(s string) (*entity.CurrencyOperation, error) {
+	fmtError := func(err error) error {
+		return fmt.Errorf("parse operation string: %v", err)
+	}
 	parts := strings.Split(strings.TrimSuffix(s, "\n"), ",")
 	if len(parts) != 6 {
-		return nil, fmt.Errorf("parse operation string, want 6 parts, got: %v, %#v", len(parts), parts)
+		return nil, fmtError(fmt.Errorf("want 6 parts, got: %v, %#v", len(parts), parts))
 	}
 	opType, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("parse operation string: %v", err)
+		return nil, fmtError(err)
 	}
-	currency := entity.Currency(parts[1])
+	currency, err := entity.CurrencyFromString(parts[1])
+	if err != nil {
+		return nil, fmtError(err)
+	}
 	amount, err := strconv.ParseFloat(parts[2], 64)
 	if err != nil {
-		return nil, fmt.Errorf("parse operation string: %v", err)
+		return nil, fmtError(err)
 	}
 	providedAt, err := strconv.ParseInt(parts[3], 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("parse operation string: %v", err)
+		return nil, fmtError(err)
 	}
 	hash, err := hex.DecodeString(parts[4])
 	if err != nil {
-		return nil, fmt.Errorf("parse operation string: %v", err)
+		return nil, fmtError(err)
 	}
 	prevHash, err := hex.DecodeString(parts[5])
 	if err != nil {
-		return nil, fmt.Errorf("parse operation string: %v", err)
+		return nil, fmtError(err)
 	}
 	op := entity.NewCurrencyOperation(entity.OperationType(opType), currency, amount, providedAt, hash, prevHash)
 	return op, nil

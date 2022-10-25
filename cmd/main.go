@@ -36,7 +36,8 @@ func run() error {
 	depositUcase := usecase.NewDepositUseCase(balance, opStorage, opCreator, depositPresenter)
 	depositController := controllers.NewCliDepositController(depositUcase)
 
-	withdrawUcase := usecase.NewWithdrawUseCase(balance, opStorage)
+	withdrawPresenter := presenters.NewCliWithdrawPresenter(os.Stdout)
+	withdrawUcase := usecase.NewWithdrawUseCase(balance, opStorage, opCreator, withdrawPresenter)
 	withdrawController := controllers.NewCliWithdrawController(withdrawUcase)
 
 	showBalancePresenter := presenters.NewCliShowBalancePresenter(os.Stdout)
@@ -47,15 +48,19 @@ func run() error {
 	showOpsUcase := usecase.NewShowOperationsUseCase(opStorage, showOpsPresenter)
 	showOpsController := controllers.NewCliShowOperationsController(showOpsUcase)
 
+	undoLastPresenter := presenters.NewCliUndoLastPresenter(os.Stdout)
+	undoLastUcase := usecase.NewUndoLastUseCase(balance, opStorage, undoLastPresenter)
+	undoLastController := controllers.NewCliUndoLastController(undoLastUcase)
+
 	commands := cli.Commands{
 		cli.NewCommand(cli.LoadBalance, `^load$`, loadBalanceController),
 		cli.NewCommand(cli.ShowHelpCommand, `^help$`, showHelpController),
 		cli.NewCommand(cli.QuitCommand, `^quit$`, nil),
-		cli.NewCommand(cli.DepositCommand, `^deposit (?P<currency>[a-zA-Z]{3}) (?P<amount>[0-9]+)$`, depositController),
-		cli.NewCommand(cli.WithdrawCommand, `^withdraw (?P<currency>[a-zA-Z]{3}) (?P<amount>[0-9]+)$`, withdrawController),
-		cli.NewCommand(cli.ShowBalanceCommand, `^balance$`, showBalanceController),
-		cli.NewCommand(cli.ShowOperationsCommand, `^operations|ops$`, showOpsController),
-		cli.NewCommand(cli.UndoCommand, `^undo$`, nil),
+		cli.NewCommand(cli.DepositCommand, `^(deposit|dpt) (?P<amount>[0-9]+) (?P<currency>[a-zA-Z]{3})$`, depositController),
+		cli.NewCommand(cli.WithdrawCommand, `^(withdraw|wdw) (?P<amount>[0-9]+) (?P<currency>[a-zA-Z]{3})$`, withdrawController),
+		cli.NewCommand(cli.ShowBalanceCommand, `^(balance|bls)$`, showBalanceController),
+		cli.NewCommand(cli.ShowOperationsCommand, `^(operations|ops)$`, showOpsController),
+		cli.NewCommand(cli.UndoCommand, `^undo$`, undoLastController),
 	}
 	app := cli.NewCliApp(commands, cli.LoadBalance, cli.ShowHelpCommand)
 

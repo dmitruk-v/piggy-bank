@@ -1,9 +1,14 @@
 package entity
 
+import "errors"
+
+var ErrNoOperations = errors.New("no operations found")
+
 type OperationStorage interface {
 	GetAll() ([]*CurrencyOperation, error)
-	PopLatest(n int) ([]*CurrencyOperation, error)
+	GetLatest() (*CurrencyOperation, error)
 	Save(op *CurrencyOperation) error
+	DeleteLatest() (*CurrencyOperation, error)
 }
 
 type OperationType int64

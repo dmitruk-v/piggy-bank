@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 	"github.com/dmitruk-v/piggy-bank/internal/domain/usecase"
@@ -19,14 +19,28 @@ func NewCliDepositController(depositUcase usecase.DepositUseCaseInput) *CliDepos
 }
 
 func (ctrl *CliDepositController) Handle(req CliRequest) error {
-	curr := entity.Currency(strings.ToUpper(req["currency"]))
-	amtVal, err := strconv.ParseFloat(req["amount"], 64)
+	depositReq, err := ctrl.validateRequest(req)
 	if err != nil {
 		return err
 	}
-	ctrl.depositUcase.Execute(usecase.DepositRequest{
-		Currency: curr,
-		Amount:   amtVal,
-	})
+	ctrl.depositUcase.Execute(depositReq)
 	return nil
+}
+
+func (ctrl *CliDepositController) validateRequest(req CliRequest) (usecase.DepositRequest, error) {
+	fmtError := func(err error) error {
+		return fmt.Errorf("validate cli deposit request: %v", err)
+	}
+	var outReq usecase.DepositRequest
+	curr, err := entity.CurrencyFromString(req["currency"])
+	if err != nil {
+		return outReq, fmtError(err)
+	}
+	amt, err := strconv.ParseFloat(req["amount"], 64)
+	if err != nil {
+		return outReq, fmtError(err)
+	}
+	outReq.Currency = curr
+	outReq.Amount = amt
+	return outReq, nil
 }

@@ -1,46 +1,67 @@
 package usecase
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/dmitruk-v/piggy-bank/internal/domain/entity"
 )
 
+type UndoLastUseCaseInput interface {
+	Execute()
+}
+
+type UndoLastResponse struct {
+	Operation *entity.CurrencyOperation
+	Error     error
+}
+
+type UndoLastUseCaseOutput interface {
+	Present(res UndoLastResponse)
+}
+
 type UndoLastUseCase struct {
 	balance   entity.Balance
 	opStorage entity.OperationStorage
+	output    UndoLastUseCaseOutput
 }
 
-func NewUndoLastUseCase(balance entity.Balance, opStorage entity.OperationStorage) *UndoLastUseCase {
+func NewUndoLastUseCase(balance entity.Balance, opStorage entity.OperationStorage, output UndoLastUseCaseOutput) *UndoLastUseCase {
 	return &UndoLastUseCase{
 		balance:   balance,
 		opStorage: opStorage,
+		output:    output,
 	}
 }
 
-func (ucase *UndoLastUseCase) Execute() error {
-	fmtError := func(err error) error {
+func (ucase *UndoLastUseCase) Execute() {
+	makeError := func(err error) error {
 		return fmt.Errorf("execute undo-last operation: %v", err)
 	}
-	ops, err := ucase.opStorage.PopLatest(1)
+	var res UndoLastResponse
+	defer func() {
+		ucase.output.Present(res)
+	}()
+	op, err := ucase.opStorage.GetLatest()
 	if err != nil {
-		return fmtError(err)
+		res.Error = makeError(err)
+		return
 	}
-	if len(ops) == 0 {
-		return fmtError(errors.New("no operations found"))
-	}
-	for _, op := range ops {
-		switch op.Optype {
-		case entity.DepositOperation:
-			if err := ucase.balance.Sub(op.Currency, op.Amount); err != nil {
-				return fmtError(err)
-			}
-		case entity.WithdrawOperation:
-			if err := ucase.balance.Add(op.Currency, op.Amount); err != nil {
-				return fmtError(err)
-			}
+	switch op.Optype {
+	case entity.DepositOperation:
+		if err := ucase.balance.Sub(op.Currency, op.Amount); err != nil {
+			res.Error = makeError(err)
+			return
+		}
+	case entity.WithdrawOperation:
+		if err := ucase.balance.Add(op.Currency, op.Amount); err != nil {
+			res.Error = makeError(err)
+			return
 		}
 	}
-	return nil
+	op, err = ucase.opStorage.DeleteLatest()
+	if err != nil {
+		res.Error = makeError(err)
+		return
+	}
+	res.Operation = op
 }
