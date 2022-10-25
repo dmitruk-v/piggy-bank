@@ -67,3 +67,7 @@ func Currencies() []Currency {
 // and multiply by 100, then keep integer 12565 in storage.
 // On presentation side we just divide that number by 100
 // and got 125.65
+
+// type Currencies struct {
+// 	items []Currency
+// }

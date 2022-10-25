@@ -21,7 +21,9 @@ func main() {
 
 func run() error {
 	opStorage := storage.NewFileOperationStorage("operations.data")
-	balance := entity.NewBalanceImpl(entity.USD, entity.EUR, entity.RUB, entity.UAH)
+	balance := entity.NewBalanceImpl([]entity.Currency{
+		entity.USD, entity.EUR, entity.RUB, entity.UAH,
+	})
 	blockChainService := common.NewBlockchainServiceImpl()
 	opCreator := entity.NewOperationsCreatorImpl(blockChainService)
 

@@ -1,4 +1,4 @@
-package usecase
+package test
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 
 func TestDepositUseCase(t *testing.T) {
 	bcService := common.NewBlockchainServiceImpl()
-	balance := entity.NewBalanceImpl(entity.EUR, entity.UAH)
+	balance := entity.NewBalanceImpl([]entity.Currency{entity.EUR, entity.UAH})
 	opStorage := storage.NewStubOperationStorage(nil)
 	opCreator := entity.NewOperationsCreatorImpl(bcService)
 	writer := bytes.NewBufferString("")
@@ -24,7 +24,7 @@ func TestDepositUseCase(t *testing.T) {
 		Amount:   12500,
 	}
 	ucase.Execute(req)
-	amount := balance.Amount(entity.EUR)
+	amount := balance.Get(entity.EUR)
 	if amount != req.Amount {
 		t.Errorf("for currency %v, got amount: %v, want: %v", req.Currency, amount, req.Amount)
 	}

@@ -1,8 +1,6 @@
 package controllers
 
-import (
-	"github.com/dmitruk-v/piggy-bank/internal/domain/usecase"
-)
+import "github.com/dmitruk-v/piggy-bank/internal/domain/usecase"
 
 type CliLoadBalanceController struct {
 	loadBalanceUcase usecase.LoadBalanceUseCaseInput
