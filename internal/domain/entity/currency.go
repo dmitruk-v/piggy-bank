@@ -54,20 +54,8 @@ func Currencies() []Currency {
 	return currencies[1:]
 }
 
-// func (c Currency) IsValid() bool {
-// 	switch c {
-// 	case USD, EUR, UAH, RUB:
-// 		return true
-// 	}
-// 	return false
-// }
-
 // TODO: Best way to store money in integer format.
 // For example: user input is 125.65, so we parse to float
 // and multiply by 100, then keep integer 12565 in storage.
 // On presentation side we just divide that number by 100
 // and got 125.65
-
-// type Currencies struct {
-// 	items []Currency
-// }
