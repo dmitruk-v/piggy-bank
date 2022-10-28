@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-type BlockchainService interface {
-	Hash(src []byte) ([]byte, error)
-}
-
 type BlockchainServiceImpl struct {
 	rand *rand.Rand
 }

@@ -2,19 +2,21 @@ package entity
 
 import (
 	"fmt"
-
-	"github.com/dmitruk-v/piggy-bank/internal/common"
 )
+
+type BlockchainService interface {
+	Hash(src []byte) ([]byte, error)
+}
 
 type OperationCreator interface {
 	Create(optype OperationType, currency Currency, amount float64, providedAt int64, prevHash []byte) (*CurrencyOperation, error)
 }
 
 type OperationsCreatorImpl struct {
-	bcService common.BlockchainService
+	bcService BlockchainService
 }
 
-func NewOperationsCreatorImpl(bcService common.BlockchainService) *OperationsCreatorImpl {
+func NewOperationsCreatorImpl(bcService BlockchainService) *OperationsCreatorImpl {
 	return &OperationsCreatorImpl{
 		bcService: bcService,
 	}

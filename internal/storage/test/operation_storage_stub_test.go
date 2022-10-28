@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	bcService common.BlockchainService
+	bcService entity.BlockchainService
 	opCreator entity.OperationCreator
 )
 
